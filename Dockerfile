@@ -10,8 +10,7 @@ RUN apt install -y --no-install-recommends openvpn iputils-ping curl ca-certific
 RUN apt -y install python3-pip
 
 # Set up uv
-ADD https://astral.sh/uv/0.6.9/install.sh /uv-installer.sh
-RUN sh /uv-installer.sh && rm /uv-installer.sh
+RUN curl -LsSf https://astral.sh/uv/0.6.9/install.sh | sh
 ENV PATH="/root/.local/bin:$PATH"
 
 # Install Python dependencies

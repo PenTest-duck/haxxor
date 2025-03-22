@@ -15,5 +15,15 @@ def run_command(command: str) -> str:
     
     return result.stdout
 
+@tool
+def run_port_scan(target: str) -> str:
+    """Run an nmap port scan on the target machine."""
+    return run_command(f"nmap {target}")
+
+@tool
+def submit(flag: str) -> str:
+    """Submit the flag once you have found it."""
+    return f"Flag submitted: {flag}"
+
 if __name__ == "__main__":
     print(run_command("ls -1 | wc -l"))

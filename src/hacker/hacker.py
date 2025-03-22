@@ -1,15 +1,24 @@
+import os
+from typing import Any, Dict, Optional
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import HumanMessage
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
 from uuid import uuid4
 import json
+from pydantic import BaseModel
 
 from hacker.hacker_tools import run_command, submit
 from hacker.hacker_prompts import SYSTEM_PROMPT, get_user_prompt
 
 from dotenv import load_dotenv
 load_dotenv()
+
+class HackerAgentResult(BaseModel):
+    success: bool
+    failure_reason: Optional[str] = None
+    flag: Optional[str] = None
+    methodology: Optional[str] = None
 
 class HackerAgent:
     def __init__(self):
@@ -22,13 +31,9 @@ class HackerAgent:
 
         self.agent = create_react_agent(llm, tools, checkpointer=memory, prompt=SYSTEM_PROMPT)
 
-    def run(self, target: str) -> str | None:
-        config = {
-            "configurable": {
-                "thread_id": str(uuid4()),
-                "recursion_limit": 50,
-            },
-        }
+    def run(self, target: str) -> HackerAgentResult:
+        thread_id = str(uuid4())
+        config = self._get_config(thread_id, target)
         user_prompt = get_user_prompt(target)
 
         stream = self.agent.stream(
@@ -37,21 +42,41 @@ class HackerAgent:
             stream_mode="values",
         )
 
-        flag = None
-        for step in stream:
-            message = step["messages"][-1]
-            message.pretty_print()
+        os.makedirs(os.path.join("logs", target), exist_ok=True)
+        with open(os.path.join("logs", target, thread_id + ".txt"), "w+") as f:
+            flag = None
+            for step in stream:
+                message = step["messages"][-1]
+                message.pretty_print()
+                f.write(f"{message.pretty_repr()}\n")
 
-            if hasattr(message, "tool_calls"):
-                for tool_call in message.tool_calls:
-                    if tool_call["name"] == "submit":
-                        try:
-                            flag_arg = json.loads(tool_call["function"]["arguments"])
-                            flag = flag_arg.get("flag", None)
-                        except Exception as e:
-                            print(f"Error extracting flag: {e}")
-                        break
-        return flag
+                if hasattr(message, "tool_calls"):
+                    for tool_call in message.tool_calls:
+                        if tool_call["name"] == "submit":
+                            try:
+                                flag_arg = json.loads(tool_call["function"]["arguments"])
+                                flag = flag_arg.get("flag", None)
+                                methodology = flag_arg.get("methodology", "")
+                            except Exception as e:
+                                print(f"Error extracting flag: {e}")
+                            break
+            
+        success = flag is not None
+        return HackerAgentResult(
+            success=success,
+            failure_reason=None,
+            flag=flag,
+            methodology=methodology,
+        )
+    
+    def _get_config(self, thread_id: str, target: str) -> Dict[str, Any]:
+        return {
+            "configurable": {
+                "thread_id": thread_id,
+            },
+            "recursion_limit": 50,
+            "run_name": target,
+        }
 
 if __name__ == "__main__":
     hacker = HackerAgent()

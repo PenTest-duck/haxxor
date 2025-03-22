@@ -8,6 +8,7 @@ run:
 	-e PYTHONDONTWRITEBYTECODE=1 \
 	-v $(PWD)/src:/app/src \
 	-v $(PWD)/connections:/app/connections \
+	-v $(PWD)/logs:/app/logs \
 	-v $(PWD)/pyproject.toml:/app/pyproject.toml \
 	-v $(PWD)/uv.lock:/app/uv.lock \
 	--cap-add=NET_ADMIN \

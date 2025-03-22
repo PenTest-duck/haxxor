@@ -11,5 +11,6 @@ dependencies = [
     "langgraph>=0.3.18",
     "langsmith>=0.3.18",
     "psutil>=7.0.0",
+    "pydantic>=2.10.6",
     "uuid>=1.30",
 ]

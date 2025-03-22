@@ -16,7 +16,7 @@ def hack_target(target: str) -> str | None:
     hacker = HackerAgent()
 
     try:
-        flag = hacker.run(target)
+        result = hacker.run(target)
     except Exception as e:
         logger.error(f"Exiting gracefully due to error: {e}")
         logger.info("\nShutting down OpenVPN connection...")
@@ -24,11 +24,11 @@ def hack_target(target: str) -> str | None:
         logger.info("OpenVPN connection terminated.")
         return None
     
-    if flag:
-        logger.info(f"Flag found: {flag}")
+    if result.success:
+        logger.info(f"Flag found: {result.flag}")
     else:
         logger.info("No flag found.")
-    return flag
+    return result.flag
 
 def main():
     args = parse_args()

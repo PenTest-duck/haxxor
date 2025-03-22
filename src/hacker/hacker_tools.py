@@ -21,9 +21,9 @@ def run_port_scan(target: str) -> str:
     return run_command(f"nmap {target}")
 
 @tool
-def submit(flag: str) -> str:
-    """Submit the flag once you have found it."""
-    return f"Flag submitted: {flag}"
+def submit(flag: str, methodology: str) -> str:
+    """Submit the flag once you have found it. Also submit a step-by-step outline of your methodology."""
+    return f"Flag submitted! Your job is complete!"
 
 if __name__ == "__main__":
     print(run_command("ls -1 | wc -l"))

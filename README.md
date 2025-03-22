@@ -7,6 +7,7 @@ TODO:
 - Basic tool calling agent
 - Connect to TryHackMe
 - Create tools 
+- Truncate long outputs
 - Better SSH/FTP/Telnet connections - keep shell open through tool?
 - Store tool output as files?
 - Make tool calls async

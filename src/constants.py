@@ -1,0 +1,2 @@
+DEFAULT_MODEL = "o3-mini"
+DEFAULT_MODEL_PROVIDER = "openai"

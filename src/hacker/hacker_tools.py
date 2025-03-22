@@ -1,4 +1,5 @@
 from langchain_core.tools import tool
+from langgraph.types import interrupt
 import subprocess
 
 @tool
@@ -15,6 +16,13 @@ def run_command(command: str) -> str:
     
     return result.stdout
 
+@tool
+def ask_human_assistance(query: str) -> str:
+    """Ask a human for assistance with a given query."""
+    response = input(f"Query: {query}\nHuman: ")
+    return response
+
+# Rustscan faster tho?
 @tool
 def run_port_scan(target: str) -> str:
     """Run an nmap port scan on the target machine."""

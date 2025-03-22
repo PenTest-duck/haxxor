@@ -2,7 +2,19 @@ build:
 	docker build -t haxxor .
 
 run:
-	docker run \
+	docker run $(DOCKER_FLAGS) \
+	haxxor \
+	uv run /app/src/main.py --target=$(target) --connection=$(connection) --model=$(model)
+
+run-local:
+	uv run src/main.py --target=$(target) --connection=$(connection) --model=$(model)
+
+run-shell:
+	docker run $(DOCKER_FLAGS) \
+	--entrypoint /bin/bash \
+	haxxor
+
+DOCKER_FLAGS = -it \
 	--env-file .env \
 	-e PYTHONUNBUFFERED=1 \
 	-e PYTHONDONTWRITEBYTECODE=1 \
@@ -13,10 +25,4 @@ run:
 	-v $(PWD)/uv.lock:/app/uv.lock \
 	--cap-add=NET_ADMIN \
 	--device /dev/net/tun \
-	--sysctl net.ipv6.conf.all.disable_ipv6=0 \
-	haxxor \
-	/bin/bash -c "uv add psutil && uv run /app/src/main.py --target=$(target) --connection=$(connection)"
-	# uv run /app/src/main.py --target=$(target) --connection=$(connection)
-
-run-local:
-	python3 src/main.py --target=$(target) --connection=$(connection)
+	--sysctl net.ipv6.conf.all.disable_ipv6=0

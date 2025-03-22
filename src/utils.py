@@ -5,6 +5,7 @@ import os
 import argparse
 
 from logger import get_logger
+from constants import DEFAULT_MODEL
 
 logger = get_logger(__name__)
 
@@ -12,6 +13,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--target", type=str, required=True, help="The target IP address")
     parser.add_argument("--connection", type=str, required=False, help="The name of the OpenVPN connection to use", default="lab")
+    parser.add_argument("--model", type=str, required=False, help="The name of the LLM model to use", default=DEFAULT_MODEL)
+    parser.add_argument("--name", type=str, required=False, help="The name of the target machine", default="")
     return parser.parse_args()
 
 def is_openvpn_running():

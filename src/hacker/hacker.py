@@ -1,14 +1,13 @@
 import os
+import time
 from typing import Any, Dict, Optional, Tuple
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import HumanMessage
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
 from uuid import uuid4
-import json
 from pydantic import BaseModel
 
-from constants import DEFAULT_MODEL_PROVIDER
 from hacker.hacker_tools import ask_human_assistance, run_command, submit
 from hacker.hacker_prompts import SYSTEM_PROMPT, get_user_prompt
 
@@ -23,7 +22,8 @@ class HackerAgentResult(BaseModel):
 
 class HackerAgent:
     def __init__(self, model: str):
-        llm = init_chat_model(model, model_provider=DEFAULT_MODEL_PROVIDER)
+        self.model = model
+        llm = init_chat_model(model=model) # TODO: temperature, thinking={"type": "enabled", "budget_tokens": 4096}
         tools = [
             run_command,
             ask_human_assistance,
@@ -33,10 +33,10 @@ class HackerAgent:
 
         self.agent = create_react_agent(llm, tools, checkpointer=memory, prompt=SYSTEM_PROMPT)
 
-    def run(self, target: str, name: str) -> HackerAgentResult:
+    def run(self, target_host: str, target_name: str) -> HackerAgentResult:
         thread_id = str(uuid4())
-        config = self._get_config(thread_id, target)
-        user_prompt = get_user_prompt(target)
+        config = self._get_config(thread_id, target_name)
+        user_prompt = get_user_prompt(target_host)
 
         stream = self.agent.stream(
             {"messages": [HumanMessage(content=user_prompt)]},
@@ -44,14 +44,26 @@ class HackerAgent:
             stream_mode="values",
         )
 
-        os.makedirs(os.path.join("logs", name), exist_ok=True)
-        with open(os.path.join("logs", name, f"{thread_id}.txt"), "w+") as f:
+        os.makedirs(os.path.join("logs", target_name), exist_ok=True)
+        with open(os.path.join("logs", target_name, f"{thread_id}.txt"), "w+") as f:
+            f.write(f"""
+==============================
+Target: {target_name}
+Host: {target_host}
+LLM: {self.model}
+Time: {time.strftime("%Y-%m-%d %H:%M:%S")}
+System Prompt: {SYSTEM_PROMPT}
+==============================\n
+            """)
+
             flag = None
             methodology = None
             for step in stream:
                 message = step["messages"][-1]
                 message.pretty_print()
+                # TODO: nicer formatted log
                 f.write(f"{message.pretty_repr()}\n")
+                f.flush()
 
                 flag, methodology = self._check_submit(message)
             
@@ -68,13 +80,13 @@ class HackerAgent:
             methodology=methodology,
         )
     
-    def _get_config(self, thread_id: str, target: str) -> Dict[str, Any]:
+    def _get_config(self, thread_id: str, name: str) -> Dict[str, Any]:
         return {
             "configurable": {
                 "thread_id": thread_id,
             },
             "recursion_limit": 50,
-            "run_name": target,
+            "run_name": name,
         }
 
     def _check_submit(self, message: Any) -> Tuple[Optional[str], Optional[str]]:
@@ -85,7 +97,7 @@ class HackerAgent:
         for tool_call in message.tool_calls:
             if tool_call.get("name") == "submit":
                 try:
-                    args = json.loads(tool_call.get("args", "{}"))
+                    args = tool_call.get("args", {})
                     flag = args.get("flag")
                     methodology = args.get("methodology")
                 except Exception as e:

@@ -1,7 +1,7 @@
 import subprocess
 from typing import Optional
 from hacker.hacker import HackerAgent
-from utils import parse_args, setup
+from utils import parse_args, setup, test_connection
 from logger import get_logger
 
 logger = get_logger(__name__)
@@ -9,12 +9,7 @@ logger = get_logger(__name__)
 def hack_target(target: str, model: str, name: Optional[str]) -> str | None:
     if not name:
         name = target
-
-    try:
-        subprocess.run(["ping", "-c", "1", target], check=True, stdout=subprocess.DEVNULL)
-        logger.info("Target is reachable through ping.")
-    except subprocess.CalledProcessError:
-        logger.error(f"Could not ping target {target}. Exiting.")
+    if not test_connection(target):
         return None
     
     hacker = HackerAgent(model)

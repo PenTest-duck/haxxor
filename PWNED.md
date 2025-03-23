@@ -1,7 +1,22 @@
-List of HackTheBox Starting Point machines pwned:
-- Meow
-- Fawn
+## HackTheBox Starting Point Machines
 
-List of HackTheBox Lab machines pwned:
+| Machine | Pwned? |
+| ------- | ------ |
+| Meow | ✅ |
+| Fawn | ✅ |
+| Dancing | ✅ |
+| Redeemer | |
+| Appointment | ✅ |
+| Sequel | ❌ |
+| Crocodile | ❌ |
+| Responder | |
+| Three | |
+| Archetype | ✅ |
+| Oopsie | |
+| Vaccine | |
+| Unified | |
 
-List of TryHackMe machines pwned:
+# HackTheBox Lab Machines
+
+# TryHackMe Machines
+

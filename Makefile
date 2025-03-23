@@ -3,26 +3,35 @@ build:
 
 run:
 	docker run $(DOCKER_FLAGS) \
+	-v $(PWD)/pyproject.toml:/app/pyproject.toml \
+	-v $(PWD)/uv.lock:/app/uv.lock \
 	haxxor \
-	uv run /app/src/main.py --target=$(target) --connection=$(connection) --model=$(model)
+	bash -c "uv add impacket && uv add langchain-anthropic && $(PYTHON_COMMAND) /app/src/main.py $(PYTHON_FLAGS)"
 
 run-local:
-	uv run src/main.py --target=$(target) --connection=$(connection) --model=$(model)
+	$(PYTHON_COMMAND) src/main.py $(PYTHON_FLAGS)
 
 run-shell:
 	docker run $(DOCKER_FLAGS) \
 	--entrypoint /bin/bash \
 	haxxor
 
-DOCKER_FLAGS = -it \
+PYTHON_COMMAND = uv run
+
+PYTHON_FLAGS = \
+	--target=$(target) \
+	--connection=$(connection) \
+	--model=$(model) \
+	--name=$(name)
+
+DOCKER_FLAGS = \
+	-it \
 	--env-file .env \
 	-e PYTHONUNBUFFERED=1 \
 	-e PYTHONDONTWRITEBYTECODE=1 \
 	-v $(PWD)/src:/app/src \
 	-v $(PWD)/connections:/app/connections \
 	-v $(PWD)/logs:/app/logs \
-	-v $(PWD)/pyproject.toml:/app/pyproject.toml \
-	-v $(PWD)/uv.lock:/app/uv.lock \
 	--cap-add=NET_ADMIN \
 	--device /dev/net/tun \
 	--sysctl net.ipv6.conf.all.disable_ipv6=0

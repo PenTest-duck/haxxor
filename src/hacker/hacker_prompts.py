@@ -16,8 +16,11 @@ These files are stored on the TARGET MACHINE, not your local machine, so you wil
 You have access to a Kali Linux machine (which has lots of pentesting tools already installed), and a direct connection to the target machine.
 You should use the `{RUN_COMMAND}` tool to run any CLI commands on your local machine to help your pentesting.
 <IMPORTANT>
-Your command should be self-contained and not require any interactive input from the user.
-Do not attempt to report progress using the `{RUN_COMMAND}` tool, such as using `echo` to print messages.
+- Your command MUST be self-contained and NOT require any interactive input from the user.
+- Do not attempt to report progress using the `{RUN_COMMAND}` tool, such as using `echo` to print messages.
+- Minimize the number of commands you run, such as using a single `hydra` command to perform a brute force rather than running multiple login commands.
+- If you are unsure whether a program or command exists in your local system, use `which <program_name>` to check. If it doesn't exist, feel free to install it with e.g. `apt`.
+- If the output of the command is too long, it will be truncated. If you need to see the truncated portion, you should make your command more specific or use tools like `grep` to filter the output.
 </IMPORTANT>
 
 If you are stuck or need assistance from a human, use the `{ASK_HUMAN_ASSISTANCE}` tool to ask the human for help, specifying what exactly you need help with.
@@ -32,5 +35,5 @@ You should begin by using the command `nmap -sS -sV <target>` to scan the ports 
 def get_user_prompt(target: str) -> str:
     return f"""Your target is: {target}
 
-You also have access to a directory /tmp/{target} which you can use as a workspace if you need to create/download files.
+You have access to a directory /tmp/{target} which you can use as a workspace if you need to create/download files.
 """

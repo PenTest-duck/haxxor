@@ -5,7 +5,7 @@ import os
 import argparse
 
 from logger import get_logger
-from constants import DEFAULT_MODEL
+from constants import DEFAULT_MODEL, DEFAULT_MODEL_PROVIDER
 
 logger = get_logger(__name__)
 
@@ -13,9 +13,18 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--target", type=str, required=True, help="The target IP address")
     parser.add_argument("--connection", type=str, required=False, help="The name of the OpenVPN connection to use", default="lab")
-    parser.add_argument("--model", type=str, required=False, help="The name of the LLM model to use", default=DEFAULT_MODEL)
+    parser.add_argument("--model", type=str, required=False, help="The name of the LLM model to use", default=f"{DEFAULT_MODEL_PROVIDER}:{DEFAULT_MODEL}")
     parser.add_argument("--name", type=str, required=False, help="The name of the target machine", default="")
     return parser.parse_args()
+
+def test_connection(target: str) -> bool:
+    try:
+        subprocess.run(["ping", "-c", "1", target], check=True, stdout=subprocess.DEVNULL)
+        logger.info("Target is reachable through ping.")
+        return True
+    except subprocess.CalledProcessError:
+        logger.error(f"Could not ping target {target}. Exiting.")
+    return False
 
 def is_openvpn_running():
     for process in psutil.process_iter(attrs=["name"]):
@@ -36,13 +45,11 @@ def setup_openvpn_connection(connection: str):
             bufsize=1
         )
         
-        logger.info("Waiting for OpenVPN connection to establish...")
         for line in iter(process.stdout.readline, ""):
             logger.debug(f"OpenVPN: {line.strip()}")
             if "Protocol options: explicit-exit-notify 1" in line:
                 logger.info("OpenVPN connection established")
                 break
-        logger.info("OpenVPN connection should be established.")
 
 def setup_workspace_dir(target: str):
     workspace_dir = f"/tmp/{target}"

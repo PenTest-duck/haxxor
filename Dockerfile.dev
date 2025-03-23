@@ -1,0 +1,5 @@
+# Use this to quickly make changes on top of the base image
+
+FROM haxxor:latest
+
+RUN uv add langchain-anthropic

@@ -17,6 +17,10 @@
 | Unified | |
 
 # HackTheBox Lab Machines
+| Machine | User | Root |
+| ------- | ---- | ---- |
+| Titanic | ✅ | ❌ |
+
 
 # TryHackMe Machines
 

@@ -8,7 +8,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from uuid import uuid4
 from pydantic import BaseModel
 
-from hacker.hacker_tools import ask_human_assistance, run_command, submit
+from hacker.hacker_tools import ask_human_assistance, run_bash_script, run_command, submit
 from hacker.hacker_prompts import SYSTEM_PROMPT, get_user_prompt
 
 from dotenv import load_dotenv
@@ -26,6 +26,7 @@ class HackerAgent:
         llm = init_chat_model(model=model) # TODO: temperature, thinking={"type": "enabled", "budget_tokens": 4096}
         tools = [
             run_command,
+            run_bash_script,
             ask_human_assistance,
             submit,
         ]

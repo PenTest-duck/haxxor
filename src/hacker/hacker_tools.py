@@ -17,11 +17,19 @@ def run_command(command: str) -> str:
     try:
         result = subprocess.run(command, capture_output=True, shell=True, text=True, check=True, timeout=MAX_COMMAND_TIMEOUT)
         return f"<stdout>\n{truncate_output(result.stdout)}\n</stdout>"
-    except subprocess.TimeoutExpired:
+    except subprocess.TimeoutExpired as e:
+        # For timeouts, we can still grab what was captured so far
         return dedent(f"""
             Command timed out after {MAX_COMMAND_TIMEOUT} seconds.
             This is either because the command took too long to execute, or you have accidentally used a command that expects interactive user input.
             Try a different command or break it down into smaller steps.
+            
+            <partial_stdout>
+            {truncate_output(e.stdout if hasattr(e, 'stdout') and e.stdout else '')}
+            </partial_stdout>
+            <partial_stderr>
+            {truncate_output(e.stderr if hasattr(e, 'stderr') and e.stderr else '')}
+            </partial_stderr>
         """)
     except subprocess.CalledProcessError as e:
         return f"""<exit_code>{e.returncode}</exit_code>
@@ -31,6 +39,11 @@ def run_command(command: str) -> str:
 <stdout>
 {truncate_output(e.stdout)}
 </stdout>"""
+
+@tool
+def run_bash_script(script: str) -> str:
+    """Run a Bash script. The script MUST be self-contained and non-interactive!"""
+    return run_command(f"/bin/bash -c '{script}'")
 
 @tool
 def ask_human_assistance(query: str) -> str:

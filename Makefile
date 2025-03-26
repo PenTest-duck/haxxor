@@ -6,7 +6,7 @@ run:
 	-v $(PWD)/pyproject.toml:/app/pyproject.toml \
 	-v $(PWD)/uv.lock:/app/uv.lock \
 	haxxor \
-	bash -c "uv add impacket && uv add langchain-anthropic && $(PYTHON_COMMAND) /app/src/main.py $(PYTHON_FLAGS)"
+	$(PYTHON_COMMAND) /app/src/main.py $(PYTHON_FLAGS)
 
 run-local:
 	$(PYTHON_COMMAND) src/main.py $(PYTHON_FLAGS)
@@ -26,6 +26,7 @@ PYTHON_FLAGS = \
 
 DOCKER_FLAGS = \
 	-it \
+	--rm \
 	--env-file .env \
 	-e PYTHONUNBUFFERED=1 \
 	-e PYTHONDONTWRITEBYTECODE=1 \
